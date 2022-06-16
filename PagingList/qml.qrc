@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>QAbstractList.qml</file>
+        <file>WASD_Keypad.qml</file>
+        <file>QBorder.qml</file>
+        <file>QLine.qml</file>
+        <file>QButton.qml</file>
+    </qresource>
+</RCC>
