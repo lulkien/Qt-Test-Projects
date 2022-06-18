@@ -2,6 +2,7 @@ import QtQuick 2.15
 import QtQuick.Window 2.15
 
 Window {
+    id: root
     width: 1280
     height: 780
     visible: true
@@ -87,15 +88,13 @@ Window {
                 console.log("S")
                 listView.focusDown()
             }
-            onAKeyClicked: console.log("A")
-            onDKeyClicked: console.log("D")
         }
     }
 
     Item {
         id: mainRight
-        width: parent.width / 2
-        height: parent.height
+        width: root.width / 2
+        height: root.height
         anchors {
             right: parent.right
             top: parent.top
@@ -110,39 +109,47 @@ Window {
             height: mainRight.height - 50
             delegateWidth: mainRight.width - 50
             delegateHeight: (mainRight.height - 50) / listView.itemPerPage
-            interactive: false
+            interactive: true
             currentIndex: 0
             itemPerPage: 5
             QBorder { }
-            delegate: Item {
-                id: delegateItem
-                width: listView.delegateWidth
-                height: listView.delegateHeight
-                readonly property bool isFocus: listView.currentIndex === index
-                QLine {
-                    isHorizontal: true
-                    lineSize: delegateItem.width - 20
-                    anchors.bottom: delegateItem.bottom
-                    anchors.horizontalCenter: delegateItem.horizontalCenter
-                    visible: index !== listView.count - 1
-                }
-                Rectangle {
-                    anchors.fill: parent
-                    color: delegateItem.isFocus ? "#32A899" : "transparent"
-                    opacity: 0.5
-                }
+            delegate: delegate
+        }
+    }
 
-                Text {
-                    anchors.centerIn: parent
-                    color: "black"
-                    text: name
-                }
+    Component {
+        id: delegate
+        Item {
+            id: delegateItem
+            width: listView.delegateWidth
+            height: listView.delegateHeight
+            readonly property bool isFocus: listView.currentIndex === index
+            QLine {
+                isHorizontal: true
+                lineSize: delegateItem.width - 20
+                anchors.bottom: delegateItem.bottom
+                anchors.horizontalCenter: delegateItem.horizontalCenter
+                visible: index !== listView.count - 1
+            }
+            Rectangle {
+                anchors.fill: parent
+                color: delegateItem.isFocus ? "#32A899" : "transparent"
+                opacity: 0.5
+            }
+            Text {
+                anchors.centerIn: parent
+                color: "black"
+                text: name
+            }
+            MouseArea {
+                anchors.fill: parent
+                onClicked: listView.currentIndex = index
             }
         }
     }
 
     Component.onCompleted: {
-        for (var i = 0; i < 6; i++) {
+        for (var i = 0; i < 13; i++) {
             listModel.append({ name: i })
         }
     }
