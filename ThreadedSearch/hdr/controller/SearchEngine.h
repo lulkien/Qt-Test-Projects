@@ -5,16 +5,18 @@
 #include <QMutex>
 #include <QString>
 #include <QByteArray>
+#include <QSqlDatabase>
+#include <SearchDaemon.h>
 
 class SearchEngine : public QObject
 {
     Q_OBJECT
 public:
     static SearchEngine *getInstance();
-    virtual ~SearchEngine();
+    ~SearchEngine();
 
 public slots:
-    bool startCrawler();
+    void testFunction();
 
 private:
     // static properties
@@ -22,18 +24,24 @@ private:
     static SearchEngine* mInstance;
     const QString CREATE_TABLE_CMD =    "CREATE TABLE IF NOT EXISTS SEARCH_TABLE "
                                         "(idx INT, "
-                                        "name TEXT, "
-                                        "no_space TEXT, "
-                                        "no_symbol TEXT, "
-                                        "letter_only TEXT, "
-                                        "abbreviation TEXT)";
+                                        "table INT, "
+                                        "content TEXT, "
+                                        "keyword TEXT)";
+
+    // Services
+    SearchDeamon    mSearchDaemon;
 
     // normal properties
-    QByteArray mDatabaseHash;
+    QByteArray      mDatabaseSHA256;
+    QString         mDatabaseConnection;
+    QSqlDatabase    mDatabase;
 
-    // methods
+private:
+    // initialize
     explicit SearchEngine(QObject *parent = nullptr);
     void initData();
+
+    // Crypto Graphic
     bool checkDatabaseUpdated();
     QByteArray getSHA256(const QString& fileName);
 signals:

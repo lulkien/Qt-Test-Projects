@@ -11,18 +11,20 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Quick Concurrent)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Quick Concurrent)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Quick Concurrent Sql)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Quick Concurrent Sql)
 
 set(SRC_DIR src)
 set(HDR_DIR hdr)
 
 
 set(PROJECT_SOURCES
-        ${HDR_DIR}/controller/SearchEngine.h
         ${HDR_DIR}/common/Constants.h
         ${SRC_DIR}/main.cpp
-        ${SRC_DIR}/controller/SearchEngine.cpp
+        hdr/controller/SearchEngine.h
+        src/controller/SearchEngine.cpp
+        hdr/services/SearchDaemon.h
+        src/services/SearchDaemon.cpp
         qml.qrc
 )
 
@@ -52,7 +54,7 @@ endif()
 target_compile_definitions(ThreadedSearch
   PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)
 target_link_libraries(ThreadedSearch
-  PRIVATE Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Quick)
+  PRIVATE Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Quick Qt${QT_VERSION_MAJOR}::Sql Qt${QT_VERSION_MAJOR}::Concurrent)
 
 set_target_properties(ThreadedSearch PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
@@ -69,4 +71,5 @@ endif()
 
 target_include_directories(ThreadedSearch PRIVATE
     hdr/controller
-    hdr/common)
+    hdr/common
+    hdr/services)

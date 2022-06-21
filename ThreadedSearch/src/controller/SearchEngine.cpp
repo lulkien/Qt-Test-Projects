@@ -3,7 +3,7 @@
 #include <QCryptographicHash>
 #include <QMutexLocker>
 #include <QFile>
-#include <QtConcurrent/QtConcurrent>
+#include <QtConcurrent>
 #include <QFuture>
 
 SearchEngine* SearchEngine::mInstance = nullptr;
@@ -23,52 +23,45 @@ SearchEngine::~SearchEngine()
 {
 }
 
-bool SearchEngine::startCrawler()
+void SearchEngine::testFunction()
 {
-    qout << CREATE_TABLE_CMD;
-    bool isUpdated = checkDatabaseUpdated();
-    if (!isUpdated)
-    {
-        qout << "Database unchanged -> ignore!";
-        return false;
-    }
-    return isUpdated;
+    LOG;
+    mSearchDaemon.reqUpdateDatabase();
 }
 
 SearchEngine::SearchEngine(QObject *parent)
     : QObject               { parent }
-    , mDatabaseHash         { QByteArray() }
+    , mDatabaseSHA256       { QByteArray() }
+    , mDatabaseConnection   { "" }
 {
     initData();
 }
 
 void SearchEngine::initData()
 {
-    QFuture<void> initThread = QtConcurrent::run([=](){
-        mDatabaseHash = getSHA256(DATABASE_PATH);
-    });
+    LOG;
 }
 
 bool SearchEngine::checkDatabaseUpdated()
 {
-    qout << "Old hash:" << mDatabaseHash;
+    LOG << "Old hash:" << mDatabaseSHA256;
     QByteArray newHash = getSHA256(DATABASE_PATH);
     if (!newHash.isEmpty())
     {
-        if (newHash != mDatabaseHash)
+        if (newHash != mDatabaseSHA256)
         {
-            mDatabaseHash = newHash;
-            qout << "New hash:" << newHash;
-            qout << "Database updated!";
+            mDatabaseSHA256 = newHash;
+            LOG << "New hash:" << newHash;
+            LOG << "Database updated!";
             return true;
         }
         else
         {
-            qout << "Database unchanged!";
+            LOG << "Database unchanged!";
             return false;
         }
     }
-    qout << "Cannot found the db -> use the old one!";
+    LOG << "Cannot found the db -> use the old one!";
     return false;
 }
 

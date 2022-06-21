@@ -16,7 +16,7 @@ Window {
         color: "green"
         MouseArea {
             anchors.fill: parent
-            onClicked: SearchEngine.startCrawler()
+            onClicked: SearchEngine.testFunction()
         }
     }
 }
