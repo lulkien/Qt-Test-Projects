@@ -5,6 +5,7 @@
 #include <QFile>
 #include <QtConcurrent>
 #include <QFuture>
+#include "SearchDaemon.h"
 
 SearchEngine* SearchEngine::mInstance = nullptr;
 QMutex SearchEngine::mLock;
@@ -26,7 +27,7 @@ SearchEngine::~SearchEngine()
 void SearchEngine::testFunction()
 {
     LOG;
-    mSearchDaemon.reqUpdateDatabase();
+    emit SearchDeamon::instance().requestUpdateDatabase();
 }
 
 SearchEngine::SearchEngine(QObject *parent)
@@ -45,7 +46,7 @@ void SearchEngine::initData()
 bool SearchEngine::checkDatabaseUpdated()
 {
     LOG << "Old hash:" << mDatabaseSHA256;
-    QByteArray newHash = getSHA256(DATABASE_PATH);
+    QByteArray newHash = getSHA256(SOURCE_DB_PATH);
     if (!newHash.isEmpty())
     {
         if (newHash != mDatabaseSHA256)

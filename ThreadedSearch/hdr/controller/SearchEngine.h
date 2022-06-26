@@ -6,7 +6,6 @@
 #include <QString>
 #include <QByteArray>
 #include <QSqlDatabase>
-#include <SearchDaemon.h>
 
 class SearchEngine : public QObject
 {
@@ -22,14 +21,6 @@ private:
     // static properties
     static QMutex mLock;
     static SearchEngine* mInstance;
-    const QString CREATE_TABLE_CMD =    "CREATE TABLE IF NOT EXISTS SEARCH_TABLE "
-                                        "(idx INT, "
-                                        "table INT, "
-                                        "content TEXT, "
-                                        "keyword TEXT)";
-
-    // Services
-    SearchDeamon    mSearchDaemon;
 
     // normal properties
     QByteArray      mDatabaseSHA256;

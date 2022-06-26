@@ -5,12 +5,12 @@
 #include <QString>
 
 #define LOG                         qDebug().noquote() << "[" << __FUNCTION__ << "][" << __LINE__ << "]"
-#define DATABASE_PATH               "/drive/HDD_1TB/Working/etc/database.db"
 
-#define STRING_SEPARATOR            "<[$]>"
+// database path
+#define SOURCE_DB_PATH              "/drive/HDD_1TB/Working/etc/database.db"
+#define TMP_DB_PATH                 "/drive/HDD_1TB/Working/etc/tmp_database.db"
+#define FINAL_DB_PATH               "/drive/HDD_1TB/Working/etc/final_database.db"
 
-#define DB_UPDATING                 true
-#define DB_UPDATED                  false
-
+#define KEY_SEPARATOR               "#"
 
 #endif //CONSTANTS_H

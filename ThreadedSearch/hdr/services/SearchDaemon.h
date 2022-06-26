@@ -2,59 +2,91 @@
 #define SEARCHDEAMON_H
 
 #include <QObject>
-#include <QThread>
+#include <QMutex>
 #include <QByteArray>
+#include <QSqlDatabase>
+#include <QString>
+
+#define SEARCHD SearchDeamon::instance()
 
 class SearchDeamon : public QObject
 {
     Q_OBJECT
 public:
     enum SearchStatus {
-        EndSearch = 0,
-        Searching = 1,
-        Querying = 2,
+        Idle = 0,
+        Query,
+        Exit,
     };
-    enum DatabaseStatus {
+    enum DatabaseUpdateStatus {
         Updating = 0,
-        Updated,
+        Ready,
     };
 
-    SearchDeamon();
+    static SearchDeamon &instance();
     ~SearchDeamon();
 
 public slots:
-    void reqUpdateDatabase();
-    void onFinishedUpdateDatabase();
+    void onRequestUpdateDatabase();
+    void onFinishUpdateDatabase();
+    void onQueryFinished();
 
 
 private:    // methods
+    SearchDeamon();
+    SearchDeamon(const SearchDeamon &other) = delete;
+    void operator =(const SearchDeamon &other) = delete;
     // initialize
     void initialize();
 
     // update database
-    void            updateDatabase();
+    void            startUpdateDatabase();
+    void            doUpdateDatabase();
     bool            isDatabaseUpdated();
+    void            replaceCurrentSearchDB();
+
+    // modify database
+    void            createSearchItemFrom(QSqlDatabase &db, const QString &table_name);
+    void            insertItemIntoDB(QSqlDatabase &db, const QSqlRecord &record, const QString &table_name);
+    QString         getUppermenu(QSqlDatabase &db, const int &index, const QString &defaultUpperMenu = "");
 
     // crypto graphic
     QByteArray      getSHA256(const QString &fileName);
 
 private:    // properties
+    // static
+    static QMutex mLock;
     // Crypto graphic
     QByteArray      mDatabaseSHA256;
 
     // threads
-    QThread         mUpdateWorker;
-    //    QThread         mQueryThread;
+    const QString mMakeTableCmd = QString("CREATE TABLE IF NOT EXISTS SEARCH_TABLE ("
+                                          "idx INT, "
+                                          "data TEXT, "
+                                          "from_table TEXT, "
+                                          "parent TEXT, "
+                                          "support INT, "
+                                          "related TEXT)");
 
     // update new database
-    int             mUpdateRequestPending;
-    DatabaseStatus  mDatabaseStatus;
-    SearchStatus    mSearchStatus;
-    bool            mMustReplaceDB;
+    int                     mUpdateRequestPending;
+    DatabaseUpdateStatus    mDatabaseStatus;
+    SearchStatus            mSearchStatus;
+    bool                    mNeedReplaceDatabase;
 
 signals:
-    void finishedUpdateDatabase();
+    void requestUpdateDatabase();
+    void finishUpdateDatabase();
+    void queryFinished();
 
+};
+
+class Utilities
+{
+public:
+    Utilities() {}
+    ~Utilities() {}
+    static QString getRelatedString(QString text);
 };
 
 #endif // SEARCHDEAMON_H
