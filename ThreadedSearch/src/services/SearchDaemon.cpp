@@ -1,5 +1,6 @@
 #include "SearchDaemon.h"
 #include "Constants.h"
+#include "Defines.h"
 #include <QCryptographicHash>
 #include <QtConcurrent>
 #include <QFile>
@@ -35,9 +36,8 @@ SearchDeamon::~SearchDeamon()
     LOG << "De-init SearchD";
 }
 
-void SearchDeamon::onRequestUpdateDatabase()
+void SearchDeamon::requestUpdateDatabase()
 {
-    LOG;
     mUpdateRequestPending++;
     LOG << "mUpdateRequestPending:" << mUpdateRequestPending << " | mDatabaseStatus: " << mDatabaseStatus;
     if (mDatabaseStatus != Updating)
@@ -83,9 +83,7 @@ void SearchDeamon::initialize()
 {
     LOG << "Main thread: " << QThread::currentThreadId();
     connect(this, &SearchDeamon::finishUpdateDatabase   , this, &SearchDeamon::onFinishUpdateDatabase   , Qt::QueuedConnection);
-    connect(this, &SearchDeamon::requestUpdateDatabase  , this, &SearchDeamon::onRequestUpdateDatabase  , Qt::AutoConnection);
     connect(this, &SearchDeamon::queryFinished          , this, &SearchDeamon::onQueryFinished          , Qt::AutoConnection);
-
 }
 
 void SearchDeamon::startUpdateDatabase()
@@ -188,6 +186,10 @@ void SearchDeamon::insertItemIntoDB(QSqlDatabase &db, const QSqlRecord &record, 
 {
     int index = record.value("idx").toInt();
     QString data = record.value("us_eng").toString();
+
+    if (data.isEmpty() || data == "N/A")
+        return;
+
     int support = record.value("support").toInt();
     QString related = Utilities::getRelatedString(data);
     QString parent = getUppermenu(db, record.value("uppermenuidx").toInt(),
@@ -204,12 +206,13 @@ void SearchDeamon::insertItemIntoDB(QSqlDatabase &db, const QSqlRecord &record, 
         query.bindValue(":parent"       , parent);
         query.bindValue(":support"      , support);
         query.bindValue(":related"      , related);
+        query.exec();
     }
     else
     {
         LOG << query.lastError().text();
+        return;
     }
-    query.exec();
 }
 
 QString SearchDeamon::getUppermenu(QSqlDatabase &db, const int &index, const QString &defaultUpperMenu)

@@ -1,22 +1,20 @@
 import QtQuick 2.15
 import QtQuick.Window 2.15
+import "common/screens"
 
 Window {
     id: root
-    width: 640
-    height: 480
+    width: KConstant.WINDOWS_WIDTH
+    height: KConstant.WINDOWS_HEIGHT
+    minimumHeight: height
+    maximumHeight: height
+    minimumWidth: width
+    maximumWidth: width
     visible: true
-    title: qsTr("Hello World")
+    title: qsTr("Search Engine")
 
-    Rectangle {
-        id: button
-        width: 100
-        height: 100
-        anchors.centerIn: parent
-        color: "green"
-        MouseArea {
-            anchors.fill: parent
-            onClicked: SearchEngine.testFunction()
-        }
+    Loader {
+        anchors.fill: parent
+        sourceComponent: KMainScreen {}
     }
 }

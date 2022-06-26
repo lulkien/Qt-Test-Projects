@@ -29,7 +29,7 @@ public:
     ~SearchDeamon();
 
 public slots:
-    void onRequestUpdateDatabase();
+    void requestUpdateDatabase();
     void onFinishUpdateDatabase();
     void onQueryFinished();
 
@@ -77,7 +77,6 @@ private:    // properties
     bool                    mNeedReplaceDatabase;
 
 signals:
-    void requestUpdateDatabase();
     void finishUpdateDatabase();
     void queryFinished();
 

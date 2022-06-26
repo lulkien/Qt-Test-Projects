@@ -5,14 +5,13 @@
 #include <QMutex>
 #include <QString>
 #include <QByteArray>
-#include <QSqlDatabase>
 
 class SearchEngine : public QObject
 {
     Q_OBJECT
 public:
-    static SearchEngine *getInstance();
-    ~SearchEngine();
+    static SearchEngine &instance();
+    virtual ~SearchEngine();
 
 public slots:
     void testFunction();
@@ -20,21 +19,14 @@ public slots:
 private:
     // static properties
     static QMutex mLock;
-    static SearchEngine* mInstance;
 
     // normal properties
-    QByteArray      mDatabaseSHA256;
-    QString         mDatabaseConnection;
-    QSqlDatabase    mDatabase;
 
 private:
     // initialize
-    explicit SearchEngine(QObject *parent = nullptr);
+    SearchEngine();
     void initData();
 
-    // Crypto Graphic
-    bool checkDatabaseUpdated();
-    QByteArray getSHA256(const QString& fileName);
 signals:
 
 };

@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>qml/main.qml</file>
+        <file>qml/common/components/KLine.qml</file>
+        <file>qml/common/screens/KMainScreen.qml</file>
     </qresource>
 </RCC>

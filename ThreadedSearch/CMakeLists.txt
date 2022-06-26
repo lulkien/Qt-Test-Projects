@@ -19,8 +19,9 @@ set(HDR_DIR hdr)
 
 
 set(PROJECT_SOURCES
-        ${HDR_DIR}/common/Constants.h
-        ${SRC_DIR}/main.cpp
+        hdr/common/Constants.h
+        hdr/common/Defines.h
+        src/main.cpp
         hdr/controller/SearchEngine.h
         src/controller/SearchEngine.cpp
         hdr/services/SearchDaemon.h
