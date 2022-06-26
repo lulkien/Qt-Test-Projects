@@ -209,23 +209,26 @@ void SearchDeamon::createSearchItemFrom(QSqlDatabase &db, const QString &table_n
 
 void SearchDeamon::insertItemIntoDB(QSqlDatabase &db, const QSqlRecord &record, const QString &table_name)
 {
-    int index = record.value("idx").toInt();
     QString data = record.value("us_eng").toString();
-
     if (data.isEmpty() || data == "N/A")
         return;
 
+    int index = record.value("idx").toInt();
+    int appid = record.value("appid").toInt();
+    int reason = record.value("reason").toInt();
     int support = record.value("support").toInt();
     QString related = Utilities::getRelatedString(data);
     QString parent = getUppermenu(db, record.value("uppermenuidx").toInt(),
                                   record.value("uppermenu").toString());
 
-    QString command = QString("INSERT INTO SEARCH_TABLE (idx, data, from_table, parent, support, related) "
-                              "VALUES (:idx, :data, :from_table, :parent, :support, :related)");
+    QString command = QString("INSERT INTO SEARCH_TABLE (idx, appid, reason, data, from_table, parent, support, related) "
+                              "VALUES (:idx, :appid, :reason, :data, :from_table, :parent, :support, :related)");
     QSqlQuery query(db);
     if (query.prepare(command))
     {
         query.bindValue(":idx"          , index);
+        query.bindValue(":appid"        , appid);
+        query.bindValue(":reason"       , reason);
         query.bindValue(":data"         , data);
         query.bindValue(":from_table"   , table_name);
         query.bindValue(":parent"       , parent);

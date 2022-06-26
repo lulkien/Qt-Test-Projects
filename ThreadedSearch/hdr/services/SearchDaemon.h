@@ -71,6 +71,8 @@ private:    // properties
     QSqlDatabase    mSearchDB;
     const QString mMakeTableCmd = QString("CREATE TABLE IF NOT EXISTS SEARCH_TABLE ("
                                           "idx INT, "
+                                          "appid INT, "
+                                          "reason INT, "
                                           "data TEXT, "
                                           "from_table TEXT, "
                                           "parent TEXT, "
