@@ -39,7 +39,7 @@ void SearchDeamon::onRequestUpdateDatabase()
 {
     LOG;
     mUpdateRequestPending++;
-    LOG << "mUpdateRequestPending:" << mUpdateRequestPending << " | mUpdatingDatabase" << mDatabaseStatus;
+    LOG << "mUpdateRequestPending:" << mUpdateRequestPending << " | mDatabaseStatus: " << mDatabaseStatus;
     if (mDatabaseStatus != Updating)
     {
         startUpdateDatabase();

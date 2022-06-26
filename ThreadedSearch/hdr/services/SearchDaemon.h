@@ -18,10 +18,12 @@ public:
         Query,
         Exit,
     };
+    Q_ENUM(SearchStatus)
     enum DatabaseUpdateStatus {
-        Updating = 0,
-        Ready,
+        Ready = 0,
+        Updating,
     };
+    Q_ENUM(DatabaseUpdateStatus)
 
     static SearchDeamon &instance();
     ~SearchDeamon();
