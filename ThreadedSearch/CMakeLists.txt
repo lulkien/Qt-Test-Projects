@@ -17,7 +17,6 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Quick Concurrent Sql
 set(SRC_DIR src)
 set(HDR_DIR hdr)
 
-
 set(PROJECT_SOURCES
         hdr/common/Constants.h
         hdr/common/Defines.h
@@ -68,9 +67,21 @@ set_target_properties(ThreadedSearch PROPERTIES
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_import_qml_plugins(ThreadedSearch)
     qt_finalize_executable(ThreadedSearch)
+    qt6_add_qml_module(ThreadedSearch
+        PLUGIN_TARGET ThreadedSearch
+        VERSION 0.1
+        RESOURCE_PREFIX qrc:/
+        QML_FILES
+            qml/common/components/KLine.qml
+            qml/common/components/KTextInput.qml
+            qml/common/screens/KMainScreen.qml
+            qml/main.qml
+    )
 endif()
 
 target_include_directories(ThreadedSearch PRIVATE
     hdr/controller
     hdr/common
     hdr/services)
+
+

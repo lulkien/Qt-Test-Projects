@@ -1,9 +1,10 @@
 #include "SearchEngine.h"
 #include "Constants.h"
 #include "Defines.h"
+#include "SearchDaemon.h"
 #include <QMutexLocker>
 #include <QFile>
-#include "SearchDaemon.h"
+#include <QQmlEngine>
 
 QMutex SearchEngine::mLock;
 
@@ -24,8 +25,29 @@ void SearchEngine::testFunction()
     SearchDeamon::instance().requestUpdateDatabase();
 }
 
-SearchEngine::SearchEngine()
+void SearchEngine::search(QString input, bool forced)
 {
+    input = input.trimmed();
+    if (input.isEmpty())
+    {
+        LOG << "Empty input!";
+        return;
+    }
+    if (input == mLastInput && !forced)
+    {
+        LOG << "Match with last input + Unforce";
+        return;
+    }
+    mLastInput = input;
+    LOG << "Input: " << mLastInput;
+    SearchDeamon::instance().requestQuery(mLastInput);
+}
+
+SearchEngine::SearchEngine()
+    : mLastInput            { "" }
+    , mCurrentFocusingItem  { -1 }
+{
+    QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
     initData();
 }
 

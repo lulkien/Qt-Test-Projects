@@ -1,4 +1,5 @@
 #include "SearchDaemon.h"
+#include "SearchEngine.h"
 #include "Constants.h"
 #include "Defines.h"
 #include <QCryptographicHash>
@@ -19,6 +20,7 @@ SearchDeamon::SearchDeamon()
     , mDatabaseStatus           { Ready }
     , mSearchStatus             { Idle }
     , mNeedReplaceDatabase      { false }
+    , mNeedReSearch             { false }
 {
     LOG << "Init SearchD";
     initialize();
@@ -43,6 +45,20 @@ void SearchDeamon::requestUpdateDatabase()
     if (mDatabaseStatus != Updating)
     {
         startUpdateDatabase();
+    }
+}
+
+void SearchDeamon::requestQuery(const QString &input)
+{
+    LOG << input;
+    if (input.isEmpty()) return;
+    if (mSearchStatus == Idle)
+    {
+        startQuery(input);
+    }
+    else if (mSearchStatus == Query)
+    {
+        mNeedReSearch = true;
     }
 }
 
@@ -77,13 +93,23 @@ void SearchDeamon::onQueryFinished()
     {
         replaceCurrentSearchDB();
     }
+    mSearchStatus = Idle;
+    if (mNeedReSearch)
+    {
+        // if need re-search
+        requestQuery(SearchEngine::instance().lastInput());
+    }
 }
 
 void SearchDeamon::initialize()
 {
     LOG << "Main thread: " << QThread::currentThreadId();
     connect(this, &SearchDeamon::finishUpdateDatabase   , this, &SearchDeamon::onFinishUpdateDatabase   , Qt::QueuedConnection);
-    connect(this, &SearchDeamon::queryFinished          , this, &SearchDeamon::onQueryFinished          , Qt::AutoConnection);
+    connect(this, &SearchDeamon::queryFinished          , this, &SearchDeamon::onQueryFinished          , Qt::QueuedConnection);
+    mUpdateDB = QSqlDatabase::addDatabase("QSQLITE", "update_connection");
+    mUpdateDB.setDatabaseName(TMP_DB_PATH);
+    mSearchDB = QSqlDatabase::addDatabase("QSQLITE", "query_connection");
+    mSearchDB.setDatabaseName(FINAL_DB_PATH);
 }
 
 void SearchDeamon::startUpdateDatabase()
@@ -108,22 +134,20 @@ void SearchDeamon::doUpdateDatabase()
         tmpDB.remove();
     }
     QFile::copy(SOURCE_DB_PATH, TMP_DB_PATH);
-    QSqlDatabase database = QSqlDatabase::addDatabase("QSQLITE");
-    database.setDatabaseName(TMP_DB_PATH);
-    if (database.open())
+    if (mUpdateDB.open())
     {
         // do
         LOG << "Do update";
-        database.exec("PRAGMA synchronous = OFF");
-        database.exec("PRAGMA journal_mode = MEMORY");
-        database.exec(mMakeTableCmd);
-        createSearchItemFrom(database, "app");
-        createSearchItemFrom(database, "CCVRSystemSubItems");
-        database.close();
+        mUpdateDB.exec("PRAGMA synchronous = OFF");
+        mUpdateDB.exec("PRAGMA journal_mode = MEMORY");
+        mUpdateDB.exec(mMakeTableCmd);
+        createSearchItemFrom(mUpdateDB, "app");
+        createSearchItemFrom(mUpdateDB, "CCVRSystemSubItems");
+        mUpdateDB.close();
     }
     else
     {
-        LOG << database.lastError().text();
+        LOG << mUpdateDB.lastError().text();
     }
 }
 
@@ -160,6 +184,7 @@ void SearchDeamon::replaceCurrentSearchDB()
     }
     QFile::copy(TMP_DB_PATH, FINAL_DB_PATH);
     mDatabaseStatus = Ready;
+    requestQuery(SearchEngine::instance().lastInput());
 }
 
 void SearchDeamon::createSearchItemFrom(QSqlDatabase &db, const QString &table_name)
@@ -226,6 +251,40 @@ QString SearchDeamon::getUppermenu(QSqlDatabase &db, const int &index, const QSt
     }
 //    LOG << ret.trimmed();
     return ret.trimmed();
+}
+
+void SearchDeamon::startQuery(const QString &input)
+{
+    LOG << input;
+    mNeedReSearch = false;
+    QtConcurrent::run([&](){
+        mSearchStatus = Query;
+        if (mSearchDB.open())
+        {
+            LOG << "do query";
+            queryFromRelatedField(mSearchDB, input);
+            mSearchDB.close();
+        }
+        else
+        {
+            LOG << mSearchDB.lastError().text();
+        }
+        emit queryFinished();
+    });
+}
+
+void SearchDeamon::queryFromRelatedField(QSqlDatabase &db, QString input)
+{
+    QString cmd = QString("SELECT * FROM SEARCH_TABLE WHERE related LIKE \"%%1%\"").arg(input);
+    QSqlQueryModel model;
+    model.setQuery(cmd, db);
+    while (model.canFetchMore()) {
+        model.fetchMore();
+    }
+    for (int i = 0; i < model.rowCount(); i++)
+    {
+        LOG << "FOUND: " << model.record(i).value("data").toString();
+    }
 }
 
 QByteArray SearchDeamon::getSHA256(const QString &fileName)

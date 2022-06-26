@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("KConstant", &Constant::instance());
     engine.rootContext()->setContextProperty("SearchEngine", &SearchEngine::instance());
 
-    const QUrl url(QStringLiteral("qrc:/qml/main.qml"));
+    const QString url("qrc:/qml/main.qml");
     engine.load(url);
 
     return app.exec();

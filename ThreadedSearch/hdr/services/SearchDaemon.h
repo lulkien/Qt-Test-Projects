@@ -16,7 +16,7 @@ public:
     enum SearchStatus {
         Idle = 0,
         Query,
-        Exit,
+        Exit = 99,  // will not be used
     };
     Q_ENUM(SearchStatus)
     enum DatabaseUpdateStatus {
@@ -30,6 +30,7 @@ public:
 
 public slots:
     void requestUpdateDatabase();
+    void requestQuery(const QString &input);
     void onFinishUpdateDatabase();
     void onQueryFinished();
 
@@ -52,6 +53,10 @@ private:    // methods
     void            insertItemIntoDB(QSqlDatabase &db, const QSqlRecord &record, const QString &table_name);
     QString         getUppermenu(QSqlDatabase &db, const int &index, const QString &defaultUpperMenu = "");
 
+    // query
+    void            startQuery(const QString &input);
+    void            queryFromRelatedField(QSqlDatabase &db, QString input);
+
     // crypto graphic
     QByteArray      getSHA256(const QString &fileName);
 
@@ -61,7 +66,9 @@ private:    // properties
     // Crypto graphic
     QByteArray      mDatabaseSHA256;
 
-    // threads
+    // database
+    QSqlDatabase    mUpdateDB;
+    QSqlDatabase    mSearchDB;
     const QString mMakeTableCmd = QString("CREATE TABLE IF NOT EXISTS SEARCH_TABLE ("
                                           "idx INT, "
                                           "data TEXT, "
@@ -75,6 +82,7 @@ private:    // properties
     DatabaseUpdateStatus    mDatabaseStatus;
     SearchStatus            mSearchStatus;
     bool                    mNeedReplaceDatabase;
+    bool                    mNeedReSearch;
 
 signals:
     void finishUpdateDatabase();
